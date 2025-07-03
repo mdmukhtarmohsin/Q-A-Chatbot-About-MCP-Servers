@@ -1,0 +1,128 @@
+{
+  "name": "MCP Expert Chatbot",
+  "version": "1.0.0",
+  "description": "Intelligent Q&A chatbot for Model Context Protocol (MCP) development",
+  "author": "MCP Expert Team",
+  "main": "panel.js",
+  "icon": "assets/mcp-icon.png",
+  "permissions": ["webRequest", "storage", "activeTab"],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onCommand:mcp-expert.openPanel"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcp-expert.openPanel",
+        "title": "Open MCP Expert Chatbot",
+        "category": "MCP Expert"
+      },
+      {
+        "command": "mcp-expert.insertCode",
+        "title": "Insert Code from MCP Expert",
+        "category": "MCP Expert"
+      },
+      {
+        "command": "mcp-expert.explainCode",
+        "title": "Explain Selected Code with MCP Expert",
+        "category": "MCP Expert"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "mcp-expert.openPanel",
+        "key": "ctrl+alt+m",
+        "mac": "cmd+alt+m"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "mcp-expert.explainCode",
+          "when": "editorHasSelection",
+          "group": "mcp-expert"
+        },
+        {
+          "command": "mcp-expert.insertCode",
+          "group": "mcp-expert"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "mcp-expert.openPanel"
+        },
+        {
+          "command": "mcp-expert.insertCode"
+        },
+        {
+          "command": "mcp-expert.explainCode",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "mcpExpertPanel",
+          "name": "MCP Expert",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MCP Expert Chatbot",
+      "properties": {
+        "mcpExpert.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "URL of the MCP Expert backend API"
+        },
+        "mcpExpert.enableCodeInsertion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic code insertion from chat responses"
+        },
+        "mcpExpert.maxResponseLength": {
+          "type": "number",
+          "default": 5000,
+          "description": "Maximum length of chat responses"
+        },
+        "mcpExpert.theme": {
+          "type": "string",
+          "enum": ["light", "dark", "auto"],
+          "default": "auto",
+          "description": "Theme for the chat panel"
+        },
+        "mcpExpert.showCodePreview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show code preview before insertion"
+        }
+      }
+    }
+  },
+  "engines": {
+    "cursor": "^1.0.0"
+  },
+  "categories": ["Other", "Snippets", "Education"],
+  "keywords": [
+    "mcp",
+    "model context protocol",
+    "ai",
+    "chatbot",
+    "assistant",
+    "development",
+    "tools",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/mcp-expert-chatbot"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/mcp-expert-chatbot/issues"
+  },
+  "homepage": "https://github.com/your-org/mcp-expert-chatbot#readme"
+}

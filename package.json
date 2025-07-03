@@ -1,0 +1,132 @@
+{
+  "name": "mcp-expert-chatbot",
+  "version": "1.0.0",
+  "description": "An intelligent Q&A chatbot focused on Model Context Protocol (MCP) development",
+  "main": "backend/main.py",
+  "scripts": {
+    "dev": "concurrently \"python3 backend/main.py\" \"npm run watch-css\"",
+    "start": "python3 backend/main.py",
+    "watch-css": "chokidar 'extension/**/*.css' -c 'echo CSS updated'",
+    "build": "python3 -m pip install -r requirements.txt",
+    "test": "python3 -m pytest tests/",
+    "lint": "eslint extension/ && python3 -m flake8 backend/",
+    "format": "prettier --write extension/ && python3 -m black backend/",
+    "serve": "python3 -m http.server 8080 --directory extension",
+    "install-deps": "python3 -m pip install -r requirements.txt && npm install"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "chatbot",
+    "ai",
+    "gemini",
+    "cursor",
+    "developer-tools",
+    "rag",
+    "python",
+    "fastapi"
+  ],
+  "author": "MCP Expert Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/mcp-expert-chatbot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/mcp-expert-chatbot/issues"
+  },
+  "homepage": "https://github.com/your-org/mcp-expert-chatbot#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "chokidar-cli": "^3.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "dependencies": {
+    "marked": "^5.1.0",
+    "highlight.js": "^11.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "extensionDependencies": [],
+  "activationEvents": [
+    "onCommand:mcpExpert.openPanel",
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcpExpert.openPanel",
+        "title": "Open MCP Expert Chat",
+        "category": "MCP Expert"
+      },
+      {
+        "command": "mcpExpert.askQuestion",
+        "title": "Ask MCP Question",
+        "category": "MCP Expert"
+      },
+      {
+        "command": "mcpExpert.insertExample",
+        "title": "Insert MCP Example",
+        "category": "MCP Expert"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "mcpExpert.openPanel",
+        "key": "ctrl+alt+m",
+        "mac": "cmd+alt+m",
+        "when": "editorTextFocus"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "mcpExpertView",
+          "name": "MCP Expert",
+          "when": "mcpExpert:enabled"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MCP Expert Chatbot",
+      "properties": {
+        "mcpExpert.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Backend API URL for MCP Expert"
+        },
+        "mcpExpert.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start backend server"
+        },
+        "mcpExpert.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "default": "auto",
+          "description": "UI theme preference"
+        },
+        "mcpExpert.maxTokens": {
+          "type": "number",
+          "default": 2048,
+          "description": "Maximum tokens for AI responses"
+        },
+        "mcpExpert.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "AI response creativity (0=focused, 1=creative)"
+        }
+      }
+    }
+  }
+}
