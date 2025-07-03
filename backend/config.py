@@ -8,7 +8,8 @@ import sys
 import logging
 from pathlib import Path
 from typing import List, Optional
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +44,7 @@ class Settings(BaseSettings):
     cache_ttl: int = Field(3600, env="CACHE_TTL")  # seconds
     
     # Model Settings
-    default_model: str = Field("gemini-pro", env="DEFAULT_MODEL")
+    default_model: str = Field("gemini-1.5-pro", env="DEFAULT_MODEL")
     max_tokens: int = Field(2048, env="MAX_TOKENS")
     temperature: float = Field(0.7, env="TEMPERATURE")
     
@@ -68,14 +69,14 @@ class Settings(BaseSettings):
     max_response_length: int = Field(4000, env="MAX_RESPONSE_LENGTH")
     include_sources: bool = Field(True, env="INCLUDE_SOURCES")
     
-    @validator("allowed_origins", pre=True)
+    @field_validator("allowed_origins", mode='before')
     def parse_origins(cls, v):
         """Parse comma-separated origins string"""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
         return v
     
-    @validator("log_level")
+    @field_validator("log_level")
     def validate_log_level(cls, v):
         """Validate log level"""
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -83,14 +84,14 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid log level: {v}")
         return v.upper()
     
-    @validator("temperature")
+    @field_validator("temperature")
     def validate_temperature(cls, v):
         """Validate temperature range"""
         if not 0 <= v <= 1:
             raise ValueError("Temperature must be between 0 and 1")
         return v
     
-    @validator("rate_limit")
+    @field_validator("rate_limit")
     def validate_rate_limit(cls, v):
         """Validate rate limit"""
         if v <= 0:

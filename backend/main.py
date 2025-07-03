@@ -9,7 +9,7 @@ from typing import List, Optional
 import asyncio
 import json
 from dotenv import load_dotenv
-from query_engine import MCPQueryEngine
+from backend.services import query_engine
 import logging
 
 # Load environment variables
@@ -32,9 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize query engine
-query_engine = MCPQueryEngine()
 
 class ChatMessage(BaseModel):
     message: str

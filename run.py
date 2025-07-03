@@ -22,7 +22,8 @@ try:
     
     from backend.config import load_configuration, settings, get_environment_info
     from backend.main import app
-    from backend.embeddings import EmbeddingManager, initialize_knowledge_base
+    from backend.services import embedding_manager
+    from backend.embeddings import initialize_knowledge_base
     
 except ImportError as e:
     print(f"❌ Missing dependencies: {e}")
@@ -37,56 +38,11 @@ class MCPExpertServer:
     """Main server class for MCP Expert Chatbot"""
     
     def __init__(self):
-        self.config = None
+        self.config = settings
         self.server = None
-        self.embedding_manager = None
+        self.embedding_manager = embedding_manager
         self.is_running = False
         
-    async def startup_checks(self) -> bool:
-        """Perform startup checks and initialization"""
-        logger.info("🚀 Starting MCP Expert Chatbot...")
-        
-        try:
-            # Load configuration
-            self.config = load_configuration()
-            logger.info("✅ Configuration loaded")
-            
-            # Check configuration issues
-            issues = self.config.validate_configuration()
-            if issues:
-                logger.warning("⚠️  Configuration issues found:")
-                for issue in issues:
-                    logger.warning(f"   {issue}")
-            
-            # Initialize embedding manager
-            logger.info("🧠 Initializing embedding manager...")
-            self.embedding_manager = EmbeddingManager(
-                persist_directory=str(self.config.database_path),
-                model_name=self.config.embedding_model
-            )
-            
-            # Initialize knowledge base
-            logger.info("📚 Initializing knowledge base...")
-            initialize_knowledge_base(self.embedding_manager)
-            
-            # Get stats
-            stats = self.embedding_manager.get_collection_stats()
-            logger.info(f"✅ Knowledge base ready: {stats.get('total_documents', 0)} documents")
-            
-            # Check Gemini configuration
-            if not self.config.gemini_configured:
-                logger.error("❌ Gemini API key not configured!")
-                logger.error("   Please set GEMINI_API_KEY environment variable")
-                return False
-            
-            logger.info("✅ Gemini API configured")
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Startup failed: {e}")
-            return False
-    
     def setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown"""
         def signal_handler(signum, frame):
@@ -146,11 +102,13 @@ class MCPExpertServer:
         # Setup signal handlers
         self.setup_signal_handlers()
         
-        # Perform startup checks
-        if not await self.startup_checks():
-            logger.error("❌ Startup checks failed, exiting...")
-            return False
-        
+        # Initialize knowledge base if needed
+        stats = self.embedding_manager.get_collection_stats()
+        if stats.get('total_documents', 0) == 0:
+            logger.info("📚 Knowledge base is empty, initializing...")
+            initialize_knowledge_base(self.embedding_manager)
+            logger.info("✅ Knowledge base initialized.")
+
         # Print startup information
         self.print_startup_info()
         
@@ -188,26 +146,32 @@ def check_python_version():
 
 def check_dependencies():
     """Check if all required dependencies are available"""
+    import importlib
     required_packages = [
         "fastapi",
         "uvicorn",
-        "google-generativeai",
+        "google.generativeai",
         "chromadb",
-        "sentence-transformers",
+        "sentence_transformers",
         "pydantic"
     ]
     
     missing = []
     for package in required_packages:
         try:
-            __import__(package.replace("-", "_"))
+            importlib.import_module(package)
         except ImportError:
             missing.append(package)
     
     if missing:
         print("❌ Missing required packages:")
         for package in missing:
-            print(f"   {package}")
+            if package == "google.generativeai":
+                print("   google-generativeai")
+            elif package == "sentence_transformers":
+                print("   sentence-transformers")
+            else:
+                print(f"   {package}")
         print("\nInstall with: pip install -r requirements.txt")
         return False
     
@@ -224,6 +188,18 @@ def open_browser(url: str, delay: int = 2):
             logger.warning(f"Could not open browser: {e}")
     
     return delayed_open()
+
+def rebuild_kb():
+    """Force rebuild of knowledge base"""
+    from backend.embeddings import EmbeddingManager, initialize_knowledge_base
+    from backend.config import load_configuration
+
+    print("🔄 Rebuilding knowledge base...")
+    config = load_configuration()
+    em = EmbeddingManager(str(config.database_path))
+    initialize_knowledge_base(em, force_rebuild=True)
+    print("✅ Knowledge base rebuilt")
+    return 0
 
 async def main():
     """Main entry point"""
@@ -300,12 +276,7 @@ def cli():
     
     # Rebuild knowledge base
     if args.rebuild_kb:
-        print("🔄 Rebuilding knowledge base...")
-        config = load_configuration()
-        em = EmbeddingManager(str(config.database_path))
-        initialize_knowledge_base(em, force_rebuild=True)
-        print("✅ Knowledge base rebuilt")
-        return 0
+        return rebuild_kb()
     
     # Run main server
     return asyncio.run(main())

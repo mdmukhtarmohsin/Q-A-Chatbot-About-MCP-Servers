@@ -150,13 +150,13 @@ if grep -q "your_api_key_here" .env 2>/dev/null || ! grep -q "GEMINI_API_KEY=" .
     fi
 fi
 
-# Start the server
+# Start the CLI
 print_status "All dependencies installed successfully!"
-print_info "Starting MCP Expert Chatbot server..."
+print_info "Starting MCP Expert Chatbot CLI..."
 echo
-print_info "The chatbot will be available at: http://localhost:8000"
-print_info "Press Ctrl+C to stop the server"
+print_info "Type your questions into the terminal."
+print_info "Type 'exit' or 'quit' to end the session."
 echo
 
-# Run the server
-python3 run.py 
+# Run the CLI
+python3 chat.py 
