@@ -1,4 +1,5 @@
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from typing import Dict, List, Any, Optional
 import logging
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class MCPQueryEngine:
     def __init__(self, embedding_manager: EmbeddingManager):
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        self.model = genai.GenerativeModel('gemini-1.0-pro')
         self.embedding_manager = embedding_manager
 
     async def process_query(self, query: str, context: Optional[str] = None) -> Dict[str, Any]:
@@ -85,10 +86,10 @@ Format your responses clearly, using markdown for code blocks where appropriate.
         try:
             # Setting safety settings to be less restrictive
             safety_settings = {
-                'HATE_SPEECH': 'BLOCK_NONE',
-                'HARASSMENT': 'BLOCK_NONE',
-                'SEXUALLY_EXPLICIT': 'BLOCK_NONE',
-                'DANGEROUS_CONTENT': 'BLOCK_NONE'
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
             }
             response = await self.model.generate_content_async(
                 prompt,
@@ -98,13 +99,19 @@ Format your responses clearly, using markdown for code blocks where appropriate.
             try:
                 return response.text
             except ValueError:
-                # If the response doesn't contain text, it was blocked.
-                logger.warning(f"Gemini response was blocked. Feedback: {response.prompt_feedback}")
-                return "My response was blocked for safety reasons. This can happen if the query or the provided context is flagged as sensitive. Please try rephrasing your query."
+                # If the response doesn't contain text, it was probably blocked.
+                logger.warning(f"Gemini response was blocked. Full feedback: {response.prompt_feedback}")
+                
+                # Construct a more detailed error message
+                error_message = "My response was blocked for safety reasons."
+                for rating in response.prompt_feedback.safety_ratings:
+                    error_message += f"\n - Category: {rating.category.name}, Probability: {rating.probability.name}"
+
+                return error_message
 
         except Exception as e:
-            logger.error(f"Error generating response from Gemini: {e}")
-            return "Sorry, I encountered an error while generating a response."
+            logger.error(f"Unexpected error generating response. Type: {type(e)}, Details: {repr(e)}")
+            return "Sorry, I encountered an error while generating a response. Please check the logs for details."
     
     def _extract_code_samples(self, response: str) -> List[Dict]:
         """Extract code samples from the response text"""
