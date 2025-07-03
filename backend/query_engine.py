@@ -94,7 +94,14 @@ Format your responses clearly, using markdown for code blocks where appropriate.
                 prompt,
                 safety_settings=safety_settings
             )
-            return response.text
+            
+            try:
+                return response.text
+            except ValueError:
+                # If the response doesn't contain text, it was blocked.
+                logger.warning(f"Gemini response was blocked. Feedback: {response.prompt_feedback}")
+                return "My response was blocked for safety reasons. This can happen if the query or the provided context is flagged as sensitive. Please try rephrasing your query."
+
         except Exception as e:
             logger.error(f"Error generating response from Gemini: {e}")
             return "Sorry, I encountered an error while generating a response."

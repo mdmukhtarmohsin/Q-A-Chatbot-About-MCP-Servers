@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+import google.generativeai as genai
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -161,6 +162,16 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
+
+# Configure Gemini API at module level
+if settings.gemini_configured:
+    try:
+        genai.configure(api_key=settings.gemini_api_key)
+        logger.info("✅ Gemini API configured successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to configure Gemini API: {e}")
+else:
+    logger.warning("⚠️ Gemini API key not found. Some features may not work.")
 
 # Additional configuration constants
 class Constants:
