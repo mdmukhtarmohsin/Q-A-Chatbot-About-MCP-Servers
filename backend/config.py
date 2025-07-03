@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     cache_ttl: int = Field(3600, env="CACHE_TTL")  # seconds
     
     # Model Settings
-    default_model: str = Field("gemini-1.5-pro", env="DEFAULT_MODEL")
+    default_model: str = Field("gemini-2.5-pro", env="DEFAULT_MODEL")
     max_tokens: int = Field(2048, env="MAX_TOKENS")
     temperature: float = Field(0.7, env="TEMPERATURE")
     

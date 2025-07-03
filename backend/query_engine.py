@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class MCPQueryEngine:
     def __init__(self, embedding_manager: EmbeddingManager):
-        self.model = genai.GenerativeModel('gemini-1.0-pro')
+        self.model = genai.GenerativeModel('gemini-2.5-pro')
         self.embedding_manager = embedding_manager
 
     async def process_query(self, query: str, context: Optional[str] = None) -> Dict[str, Any]:

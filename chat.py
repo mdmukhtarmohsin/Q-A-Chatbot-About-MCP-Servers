@@ -11,6 +11,8 @@ from pathlib import Path
 # Add backend to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
+# Load configuration before other backend imports
+from backend.config import settings
 from backend.embeddings import EmbeddingManager
 from backend.query_engine import MCPQueryEngine
 
